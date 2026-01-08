@@ -280,7 +280,7 @@
             };
 
             const fileName = fileMap[platform];
-            const url = `https://github.com/mich-de/comet-downloader/raw/main/releases/${fileName}`;
+            const url = `https://github.com/mich-de/comet/raw/main/releases/${fileName}`;
             
             // Cambia tuousername con il tuo username GitHub!
 
@@ -304,7 +304,7 @@
         // Carica le info dal repo
         function loadRepoInfo() {
             const username = 'mich-de'; // Cambia!
-            const repo = 'comet-downloader';
+            const repo = 'comet';
             
             fetch(`https://api.github.com/repos/${username}/${repo}/commits?path=releases&per_page=1`)
                 .then(r => r.json())
