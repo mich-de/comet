@@ -7,18 +7,15 @@ jobs:
   cleanup-deployments:
     runs-on: ubuntu-latest
     permissions:
-      contents: read    # per usare il repo; i permessi reali arrivano dal PAT
+      contents: read
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup GitHub CLI
-        uses: cli/cli-action@v2
-
       - name: Delete all deployments (all environments)
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}   # il tuo PAT, NON GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.PAT }}
           REPO: mich-de/comet
         run: |
           set -e
@@ -39,3 +36,6 @@ jobs:
               -H "X-GitHub-Api-Version: 2022-11-28" \
               "repos/$REPO/deployments/$ID" || true
           done
+
+          echo ""
+          echo "Cleanup completato!"
