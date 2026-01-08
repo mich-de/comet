@@ -171,6 +171,8 @@ curl -L -o comet-installer.exe \
 
 # Method 3: Using GitHub CLI
 gh release download comet-win64-latest --repo mich-de/comet -p "*.exe"
+```
+
 ❓ Frequently Asked Questions
 Q: Is this official?
 
