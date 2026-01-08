@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Website](https://img.shields.io/badge/Website-Live-brightgreen?style=flat-square&logo=github-pages)](https://mich-de.github.io/comet/)
 
-**[English](#english)** | **[Italiano](#italiano)**
+**🇬🇧 [English](#english)** | **🇮🇹 [Italiano](#italiano)**
 
 </div>
 
