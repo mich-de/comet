@@ -333,147 +333,6 @@
             font-weight: 700;
         }
 
-        .settings-icon {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 24px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-
-        .settings-icon:hover {
-            transform: scale(1.15);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        .settings-icon:active {
-            transform: scale(0.95);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal.show {
-            display: flex;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        .modal-header {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 25px;
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-            background: #f9f9ff;
-        }
-
-        .modal-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .btn {
-            padding: 11px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-save {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-cancel {
-            background: #e8e8e8;
-            color: #333;
-        }
-
-        .btn-cancel:hover {
-            background: #d8d8d8;
-        }
-
-        .config-info {
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 15px;
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-        }
-
         @media (max-width: 700px) {
             .container {
                 padding: 30px;
@@ -494,20 +353,8 @@
                 width: 100%;
             }
 
-            .settings-icon {
-                width: 48px;
-                height: 48px;
-                font-size: 20px;
-                bottom: 15px;
-                right: 15px;
-            }
-
             .modal-content {
                 padding: 24px;
-            }
-
-            .modal-buttons {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -565,26 +412,10 @@
         <div class="download-section">
             <div class="section-title">📥 Scegli la Versione</div>
             <div class="downloads-grid">
-                <div class="download-card" onclick="downloadFile('win_x64')">
+                <div class="download-card" onclick="downloadFile()">
                     <div class="download-info">
                         <div class="download-name">💻 Windows 64-bit</div>
-                        <div class="download-desc">Versione consigliata (99% dei PC moderni)</div>
-                    </div>
-                    <button class="download-btn">Scarica</button>
-                </div>
-
-                <div class="download-card" onclick="downloadFile('win_ia32')">
-                    <div class="download-info">
-                        <div class="download-name">💻 Windows 32-bit</div>
-                        <div class="download-desc">Per PC più datati</div>
-                    </div>
-                    <button class="download-btn">Scarica</button>
-                </div>
-
-                <div class="download-card" onclick="downloadFile('darwin')">
-                    <div class="download-info">
-                        <div class="download-name">🍎 macOS</div>
-                        <div class="download-desc">Intel e Apple Silicon</div>
+                        <div class="download-desc">Ultima versione stabile da GitHub Releases</div>
                     </div>
                     <button class="download-btn">Scarica</button>
                 </div>
@@ -604,19 +435,13 @@
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <p>I file vengono salvati in questo repository GitHub</p>
+                        <p>La versione più recente viene pubblicata come release “latest” su GitHub</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <p>Tu scarichi da GitHub (che quasi mai è bloccato dalle aziende)</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <p>Installi Comet normalmente sul tuo PC come al solito</p>
+                        <p>Tu scarichi sempre e solo l'ultima build tramite questo sito</p>
                     </div>
                 </div>
             </div>
@@ -625,9 +450,9 @@
         <!-- Manual Download -->
         <div class="manual-download">
             <h3>📋 Download Manuale</h3>
-            <p>Se i bottoni non funzionano, copia-incolla questo URL nel browser:</p>
+            <p>Se il bottone non funziona, copia-incolla questo URL nel browser (punta sempre all'ultima release):</p>
             <div class="url-box" id="manual-url" onclick="copyUrl()">
-                https://github.com/mich-de/comet/raw/main/releases/comet-installer-win_x64.exe
+                https://github.com/mich-de/comet/releases/latest/download/comet-installer-win_x64.exe
             </div>
             <p class="copy-hint">💡 Clicca per copiare negli appunti</p>
         </div>
@@ -637,134 +462,29 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p>✅ Ultimo aggiornamento: <span class="last-update" id="last-update">Caricamento...</span></p>
+            <p>✅ Ultimo aggiornamento: <span class="last-update" id="last-update">GitHub Releases</span></p>
             <p>Ospitato gratuitamente su <strong>GitHub Pages</strong></p>
-            <p style="margin-top: 15px; font-size: 11px;">ℹ️ Clicca l'icona ⚙️ per configurare username e repo</p>
-        </div>
-    </div>
-
-    <!-- Settings Button -->
-    <button class="settings-icon" onclick="openSettings()" title="Impostazioni">⚙️</button>
-
-    <!-- Settings Modal -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-header">⚙️ Impostazioni</div>
-            
-            <div class="form-group">
-                <label>Username GitHub</label>
-                <input type="text" id="inputUsername" placeholder="es: mich-de">
-            </div>
-
-            <div class="form-group">
-                <label>Nome Repository</label>
-                <input type="text" id="inputRepo" placeholder="es: comet">
-            </div>
-
-            <div class="config-info">
-                <strong>💡 Tip:</strong> Inserisci le credenziali del tuo repository dove GitHub Actions scarica Comet. Le impostazioni verranno salvate automaticamente.
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-save" onclick="saveSettings()">✓ Salva</button>
-                <button class="btn btn-cancel" onclick="closeSettings()">✕ Chiudi</button>
-            </div>
         </div>
     </div>
 
     <script>
-        // ======================================
-        // VARIABILI CONFIGURABILI
-        // ======================================
-        let CONFIG = {
-            username: 'mich-de',
-            repo: 'comet'
-        };
-
-        // ======================================
-        // Carica configurazione dal localStorage
-        // ======================================
-        function loadConfig() {
-            const saved = localStorage.getItem('cometConfig');
-            if (saved) {
-                try {
-                    CONFIG = JSON.parse(saved);
-                } catch (e) {
-                    console.error('Errore caricamento config:', e);
-                }
-            }
-            updateUI();
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status-message show ${type}`;
         }
 
-        // ======================================
-        // Aggiorna l'interfaccia con i dati attuali
-        // ======================================
-        function updateUI() {
-            const url = `https://github.com/${CONFIG.username}/${CONFIG.repo}/raw/main/releases/comet-installer-win_x64.exe`;
-            document.getElementById('manual-url').textContent = url;
-            loadRepoInfo();
+        function hideStatus() {
+            const status = document.getElementById('status');
+            status.className = 'status-message';
         }
 
-        // ======================================
-        // Salva le impostazioni
-        // ======================================
-        function saveSettings() {
-            const username = document.getElementById('inputUsername').value.trim();
-            const repo = document.getElementById('inputRepo').value.trim();
+        function downloadFile() {
+            const url = 'https://github.com/mich-de/comet/releases/latest/download/comet-installer-win_x64.exe';
+            const fileName = 'comet-installer-win_x64.exe';
 
-            if (!username || !repo) {
-                showStatus('Per favore compila tutti i campi!', 'error');
-                return;
-            }
-
-            CONFIG.username = username;
-            CONFIG.repo = repo;
-            localStorage.setItem('cometConfig', JSON.stringify(CONFIG));
-            
-            updateUI();
-            closeSettings();
-            showStatus('✓ Configurazione salvata con successo!', 'success');
-        }
-
-        // ======================================
-        // Apri/Chiudi il modal delle impostazioni
-        // ======================================
-        function openSettings() {
-            const modal = document.getElementById('settingsModal');
-            modal.classList.add('show');
-            document.getElementById('inputUsername').value = CONFIG.username;
-            document.getElementById('inputRepo').value = CONFIG.repo;
-            document.getElementById('inputUsername').focus();
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('show');
-        }
-
-        // Chiudi il modal quando clicchi fuori
-        document.addEventListener('click', (e) => {
-            const modal = document.getElementById('settingsModal');
-            if (e.target === modal) {
-                closeSettings();
-            }
-        });
-
-        // ======================================
-        // Download del file
-        // ======================================
-        function downloadFile(platform) {
-            const fileMap = {
-                'win_x64': 'comet-installer-win_x64.exe',
-                'win_ia32': 'comet-installer-win_ia32.exe',
-                'darwin': 'comet-installer-darwin.dmg',
-            };
-
-            const fileName = fileMap[platform];
-            const url = `https://github.com/${CONFIG.username}/${CONFIG.repo}/raw/main/releases/${fileName}`;
-            
             showStatus('⏳ Download in corso...', 'loading');
 
-            // Crea un link temporaneo e scarica
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
@@ -781,86 +501,16 @@
             }, 5000);
         }
 
-        // ======================================
-        // Copia URL negli appunti
-        // ======================================
         function copyUrl() {
-            const url = document.getElementById('manual-url').textContent;
+            const url = document.getElementById('manual-url').textContent.trim();
             navigator.clipboard.writeText(url).then(() => {
                 showStatus('✓ URL copiato negli appunti!', 'success');
                 setTimeout(hideStatus, 3000);
             }).catch(() => {
                 showStatus('✗ Errore nella copia', 'error');
+                setTimeout(hideStatus, 3000);
             });
         }
-
-        // ======================================
-        // Mostra/nascondi messaggi di stato
-        // ======================================
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = `status-message show ${type}`;
-        }
-
-        function hideStatus() {
-            const status = document.getElementById('status');
-            status.classList.remove('show');
-        }
-
-        // ======================================
-        // Carica info dal repository
-        // ======================================
-        function loadRepoInfo() {
-            const cacheKey = `cometRepoInfo_${CONFIG.username}_${CONFIG.repo}`;
-            const cached = localStorage.getItem(cacheKey);
-            
-            // Se la cache è recente (< 1 ora), usala
-            if (cached) {
-                const data = JSON.parse(cached);
-                if (Date.now() - data.timestamp < 3600000) {
-                    updateLastUpdate(data.date);
-                    return;
-                }
-            }
-
-            // Altrimenti, carica da GitHub API
-            fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/commits?path=releases&per_page=1`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data[0]) {
-                        const date = new Date(data[0].commit.author.date);
-                        localStorage.setItem(cacheKey, JSON.stringify({
-                            date: date.toISOString(),
-                            timestamp: Date.now()
-                        }));
-                        updateLastUpdate(date);
-                    }
-                })
-                .catch(() => {
-                    document.getElementById('last-update').textContent = 'Non disponibile';
-                });
-        }
-
-        function updateLastUpdate(date) {
-            const formatted = date.toLocaleDateString('it-IT') + ' ' + date.toLocaleTimeString('it-IT');
-            document.getElementById('last-update').textContent = formatted;
-        }
-
-        // ======================================
-        // Inizializza al caricamento della pagina
-        // ======================================
-        window.addEventListener('load', () => {
-            loadConfig();
-        });
-
-        // Consenti Enter nei form
-        document.getElementById('inputUsername')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') saveSettings();
-        });
-        document.getElementById('inputRepo')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') saveSettings();
-        });
     </script>
 </body>
 </html>
