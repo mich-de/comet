@@ -3,7 +3,7 @@ name: Download Comet Latest (Win64)
 on:
   schedule:
     - cron: '0 0 * * *'        # ogni giorno a mezzanotte UTC
-  workflow_dispatch:            # avvio manuale da Actions
+  workflow_dispatch:
 
 jobs:
   download:
@@ -12,9 +12,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false   # usiamo il PAT, non il token di default
 
       - name: Download Comet Windows 64-bit
         run: |
@@ -23,15 +20,54 @@ jobs:
             -o releases/comet-installer-win_x64.exe \
             "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
 
-      - name: Commit e Push con PAT
+      - name: Create/Update GitHub Release (comet-win64-latest)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: comet-win64-latest
+          name: Comet Win64 Latest
+          draft: false
+          prerelease: false
+          files: releases/comet-installer-win_x64.exe
+          overwrite: true          # sovrascrive asset e release con lo stesso tag[web:79]
         env:
-          PAT: ${{ secrets.PAT }}   # Personal Access Token creato nei secrets, con scope repo
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
+      - name: Delete all other releases and tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          OWNER: mich-de
+          REPO: comet
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          set -e
 
-          git add releases/
-          git commit -m "Update Comet Win64: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || echo "No changes"
+          echo "Pulizia release/tag non più usati..."
 
-          git remote set-url origin https://x-access-token:${PAT}@github.com/mich-de/comet.git
-          git push origin main
+          # prendi ID della release 'comet-win64-latest'
+          LATEST_ID=$(gh api \
+            repos/$OWNER/$REPO/releases/tags/comet-win64-latest \
+            --jq '.id')
+
+          echo "ID release corrente: $LATEST_ID"
+
+          # lista tutte le release
+          ALL_IDS=$(gh api repos/$OWNER/$REPO/releases --paginate --jq '.[].id')
+
+          for ID in $ALL_IDS; do
+            if [ "$ID" != "$LATEST_ID" ]; then
+              echo "Elimino release ID=$ID"
+              gh api \
+                --method DELETE \
+                repos/$OWNER/$REPO/releases/$ID || true
+            fi
+          done
+
+          # elimina tutti i tag tranne 'comet-win64-latest'
+          TAGS=$(git tag -l)
+
+          for TAG in $TAGS; do
+            if [ "$TAG" != "comet-win64-latest" ]; then
+              echo "Elimino tag $TAG"
+              git push origin :refs/tags/$TAG || true
+              git tag -d "$TAG" || true
+            fi
+          done
