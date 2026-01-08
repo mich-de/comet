@@ -14,18 +14,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false   # usiamo il PAT, non il token di default[web:49]
+          persist-credentials: false   # usiamo il PAT, non il token di default
 
       - name: Download Comet Windows 64-bit
         run: |
           mkdir -p releases
           curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
             -o releases/comet-installer-win_x64.exe \
-            "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"[web:1]
+            "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
 
       - name: Commit e Push con PAT
         env:
-          PAT: ${{ secrets.PAT }}   # il tuo Personal Access Token salvato nei secrets[web:48]
+          PAT: ${{ secrets.PAT }}   # il tuo Personal Access Token salvato nei secrets
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
