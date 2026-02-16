@@ -71,6 +71,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
+      - name: Update VERSIONS.md
+        run: |
+          DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          FILE="VERSIONS.md"
+          HEADER="| Date | Version | Size | Source URL |"
+          SEPARATOR="|------|---------|------|------------|"
+          
+          # ALWAYS ensure header exists
+          if [ ! -f "$FILE" ] || ! grep -q "^| Date" "$FILE"; then
+            echo "$HEADER" > "$FILE"
+            echo "$SEPARATOR" >> "$FILE"
+          fi
+          
+          # Clean the source URL (strip query params)
+          CLEAN_URL=$(echo "$FINAL_URL" | cut -d'?' -f1)
+          
+          # Prepend new entry after header
+          NEW_LINE="| $DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
+          
+          head -n 2 "$FILE" > temp_versions.md
+          echo "$NEW_LINE" >> temp_versions.md
+          tail -n +3 "$FILE" >> temp_versions.md
+          mv temp_versions.md "$FILE"
+          
+          echo "=== Updated VERSIONS.md ==="
+          cat "$FILE"
+
       - name: Commit VERSIONS.md
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -85,19 +112,6 @@ jobs:
             git push
           fi
 
-
-      - name: Commit Versions.MD
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          
-          git add Versions.MD
-          if git diff --staged --quiet; then
-            echo "No changes to Versions.MD"
-          else
-            git commit -m "📦 Comet $VERSION"
-            git push
-          fi
 
       - name: Create/Update GitHub Release
         uses: softprops/action-gh-release@v2
