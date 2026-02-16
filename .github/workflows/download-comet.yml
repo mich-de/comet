@@ -24,31 +24,52 @@ jobs:
         run: |
           mkdir -p releases
           
-          # 1. Get the final redirected URL (contains the version)
           FINAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable")
           echo "Detected Final URL: $FINAL_URL"
           
-          # 2. Extract Version from URL (matches pattern X.X.X.X)
           VERSION=$(echo "$FINAL_URL" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-          
           if [ -z "$VERSION" ]; then
             VERSION="Unknown"
           fi
-          
           echo "Detected Version: $VERSION"
           
-          # 3. Download the file
           curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
             -o releases/comet-installer-win_x64.exe \
             "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
           
-          # 4. Get file size in MB
           FILE_SIZE=$(du -m releases/comet-installer-win_x64.exe | cut -f1)
           
-          # Export variables
+          # Set the date HERE where shell is evaluated
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+          
           echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "FILE_SIZE=${FILE_SIZE}MB" >> $GITHUB_ENV
+          echo "BUILD_DATE=$DATE" >> $GITHUB_ENV
+
+      - name: Create/Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: comet-win64-latest
+          name: "Comet Win64 — v${{ env.VERSION }}"
+          body: |
+            ## 🚀 Comet Browser v${{ env.VERSION }}
+            
+            | Info | Value |
+            |------|-------|
+            | **Version** | `${{ env.VERSION }}` |
+            | **Size** | ${{ env.FILE_SIZE }} |
+            | **Platform** | Windows x64 |
+            | **Updated** | ${{ env.BUILD_DATE }} |
+            
+            _Mirrored automatically from Perplexity's official servers._
+          draft: false
+          prerelease: false
+          files: releases/comet-installer-win_x64.exe
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Update Versions.MD
         run: |
