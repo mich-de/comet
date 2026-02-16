@@ -6,7 +6,8 @@ on:
   workflow_dispatch:           # Allows manual trigger
 
 permissions:
-  contents: write              # REQUIRED: Allows creating releases and deleting tags
+  contents: write              # REQUIRED: for committing Versions.MD and creating releases
+  deployments: write           # REQUIRED: for cleaning up deployments
 
 jobs:
   download:
@@ -16,15 +17,68 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0       # Fetch all history for tag operations
+          fetch-depth: 0       # Fetch all history
 
-      - name: Download Comet Windows 64-bit
+      - name: Download & Check Version
+        id: download
         run: |
           mkdir -p releases
-          # Uses -L to follow redirects and --fail to stop on error
+          
+          # 1. Get the final redirected URL (often contains version info)
+          FINAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable")
+          echo "Detected Final URL: $FINAL_URL"
+          
+          # 2. Download the file
           curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
             -o releases/comet-installer-win_x64.exe \
             "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
+
+          # 3. Extract 'Last-Modified' header for versioning context
+          LAST_MODIFIED=$(curl -sI "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable" | grep -i "last-modified" | cut -d: -f2- | xargs)
+          
+          # Export variables for the next step
+          echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
+          echo "LAST_MODIFIED=$LAST_MODIFIED" >> $GITHUB_ENV
+
+      - name: Update Versions.MD
+        run: |
+          DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          FILE="Versions.MD"
+          
+          # Ensure file exists with header
+          if [ ! -f "$FILE" ]; then
+            echo "| Date | Last Modified (Server) | Source URL |" > "$FILE"
+            echo "|---|---|---|" >> "$FILE"
+          fi
+          
+          # Prepare new line
+          NEW_LINE="| $DATE | $LAST_MODIFIED | $FINAL_URL |"
+          
+          # Prepend new line (keeping the header)
+          # 1. Save header to temp
+          head -n 2 "$FILE" > temp_versions.md
+          # 2. Add new line
+          echo "$NEW_LINE" >> temp_versions.md
+          # 3. Add the rest of the file (skipping old header)
+          tail -n +3 "$FILE" >> temp_versions.md
+          # 4. Replace original
+          mv temp_versions.md "$FILE"
+          
+          cat "$FILE"
+
+      - name: Commit Versions.MD
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          git add Versions.MD
+          # Commit only if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to Versions.MD"
+          else
+            git commit -m "Update Versions.MD with new release info"
+            git push
+          fi
 
       - name: Create/Update GitHub Release (comet-win64-latest)
         uses: softprops/action-gh-release@v2
@@ -38,55 +92,56 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete all other releases and tags
+      - name: Cleanup Old Releases/Tags
         env:
-          # Use GITHUB_TOKEN for both auth methods
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.event.repository.name }}
         run: |
           set -e
+          echo "Starting cleanup..."
 
-          # Configure git for tag deletion
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-          echo "Cleaning up old releases..."
-
-          # Get ID of the release we just created/updated
-          LATEST_ID=$(gh api \
-            repos/$OWNER/$REPO/releases/tags/comet-win64-latest \
-            --jq '.id')
-
-          echo "Current Keep-Alive Release ID: $LATEST_ID"
-
-          # List all releases
+          # 1. CLEANUP RELEASES (Keep strictly the one we just made)
+          LATEST_ID=$(gh api repos/$OWNER/$REPO/releases/tags/comet-win64-latest --jq '.id')
           ALL_IDS=$(gh api repos/$OWNER/$REPO/releases --paginate --jq '.[].id')
 
           for ID in $ALL_IDS; do
             if [ "$ID" != "$LATEST_ID" ] && [ -n "$ID" ]; then
-              echo "Deleting old release ID=$ID"
-              gh api \
-                --method DELETE \
-                repos/$OWNER/$REPO/releases/$ID || true
+              echo "Deleting obsolete release ID=$ID"
+              gh api --method DELETE repos/$OWNER/$REPO/releases/$ID || true
             fi
           done
 
-          echo "Cleaning up old tags..."
-          
-          # Fetch all tags to ensure we see them
+          # 2. CLEANUP TAGS
           git fetch --tags
-          
-          # List all tags
           TAGS=$(git tag -l)
-
           for TAG in $TAGS; do
             if [ "$TAG" != "comet-win64-latest" ]; then
-              echo "Deleting tag $TAG"
-              # Delete remote tag
+              echo "Deleting obsolete tag $TAG"
               git push origin --delete "$TAG" || true
-              # Delete local tag
               git tag -d "$TAG" || true
             fi
           done
+
+      - name: Cleanup Deployments
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          echo "Fetching list of deployments..."
+          
+          # Get all deployment IDs
+          IDS=$(gh api "repos/$REPO/deployments?per_page=100" --paginate --jq '.[].id')
+          
+          if [ -z "$IDS" ]; then
+            echo "No deployments found."
+            exit 0
+          fi
+          
+          for ID in $IDS; do
+            echo "Deleting deployment $ID..."
+            gh api --method DELETE "repos/$REPO/deployments/$ID" || true
+          done
+          
+          echo "Cleanup complete!"
