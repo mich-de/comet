@@ -1,0 +1,68 @@
+name: Cleanup Workflow Runs
+
+on:
+  schedule:
+    - cron: '30 0 * * *'       # Runs daily at 00:30 UTC (after the download workflow)
+  workflow_dispatch:           # Manual trigger
+
+permissions:
+  actions: write               # REQUIRED: to delete workflow runs
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cleanup old workflow runs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          echo "🧹 Cleaning up old workflow runs..."
+
+          # Get all workflow IDs in this repo
+          WORKFLOW_IDS=$(gh api "repos/$REPO/actions/workflows" --jq '.workflows[].id')
+
+          for WF_ID in $WORKFLOW_IDS; do
+            WF_NAME=$(gh api "repos/$REPO/actions/workflows/$WF_ID" --jq '.name')
+            echo ""
+            echo "━━━ Workflow: $WF_NAME (ID: $WF_ID) ━━━"
+
+            # Get all runs for this workflow, sorted by date (newest first)
+            # Keep only the latest successful run, delete everything else
+            RUNS=$(gh api "repos/$REPO/actions/workflows/$WF_ID/runs?per_page=100" \
+              --jq '.workflow_runs | sort_by(.created_at) | reverse | .[].id')
+
+            KEPT_ONE=false
+
+            for RUN_ID in $RUNS; do
+              # Get run status and conclusion
+              CONCLUSION=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.conclusion')
+              STATUS=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.status')
+
+              # Skip if still running
+              if [ "$STATUS" = "in_progress" ] || [ "$STATUS" = "queued" ]; then
+                echo "  ⏳ Run $RUN_ID is still running, skipping..."
+                continue
+              fi
+
+              # Keep the first (latest) successful run
+              if [ "$KEPT_ONE" = false ] && [ "$CONCLUSION" = "success" ]; then
+                echo "  ✅ Keeping run $RUN_ID (latest success)"
+                KEPT_ONE=true
+                continue
+              fi
+
+              # Delete everything else
+              echo "  🗑️  Deleting run $RUN_ID (conclusion: $CONCLUSION)"
+              gh api --method DELETE "repos/$REPO/actions/runs/$RUN_ID" || true
+            done
+
+            if [ "$KEPT_ONE" = false ]; then
+              echo "  ⚠️  No successful runs found, nothing kept"
+            fi
+          done
+
+          echo ""
+          echo "✅ Cleanup complete!"
