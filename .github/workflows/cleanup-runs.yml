@@ -2,7 +2,7 @@ name: Cleanup Workflow Runs
 
 on:
   schedule:
-    - cron: '30 0 * * *'       # Runs daily at 00:30 UTC (after the download workflow)
+    - cron: '30 0 * * *'       # Runs daily at 00:30 UTC
   workflow_dispatch:           # Manual trigger
 
 permissions:
@@ -13,56 +13,105 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cleanup old workflow runs
+      - name: Cleanup all workflow runs (keep latest success per workflow)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           set -e
-          echo "🧹 Cleaning up old workflow runs..."
+          echo "🧹 Cleaning up ALL workflow runs across ALL actions..."
+          echo ""
 
-          # Get all workflow IDs in this repo
-          WORKFLOW_IDS=$(gh api "repos/$REPO/actions/workflows" --jq '.workflows[].id')
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          # PART 1: Active workflows (existing .yml files)
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          echo "📂 PART 1: Active Workflows"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          WORKFLOW_IDS=$(gh api "repos/$REPO/actions/workflows" --paginate --jq '.workflows[].id')
 
           for WF_ID in $WORKFLOW_IDS; do
             WF_NAME=$(gh api "repos/$REPO/actions/workflows/$WF_ID" --jq '.name')
             echo ""
-            echo "━━━ Workflow: $WF_NAME (ID: $WF_ID) ━━━"
+            echo "▸ $WF_NAME (ID: $WF_ID)"
 
-            # Get all runs for this workflow, sorted by date (newest first)
-            # Keep only the latest successful run, delete everything else
-            RUNS=$(gh api "repos/$REPO/actions/workflows/$WF_ID/runs?per_page=100" \
-              --jq '.workflow_runs | sort_by(.created_at) | reverse | .[].id')
+            RUNS_JSON=$(gh api "repos/$REPO/actions/workflows/$WF_ID/runs?per_page=100" --paginate \
+              --jq '.workflow_runs | sort_by(.created_at) | reverse | .[] | "\(.id)|\(.conclusion)|\(.status)"')
 
             KEPT_ONE=false
 
-            for RUN_ID in $RUNS; do
-              # Get run status and conclusion
-              CONCLUSION=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.conclusion')
-              STATUS=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.status')
+            while IFS= read -r LINE; do
+              [ -z "$LINE" ] && continue
+              RUN_ID=$(echo "$LINE" | cut -d'|' -f1)
+              CONCLUSION=$(echo "$LINE" | cut -d'|' -f2)
+              STATUS=$(echo "$LINE" | cut -d'|' -f3)
 
               # Skip if still running
               if [ "$STATUS" = "in_progress" ] || [ "$STATUS" = "queued" ]; then
-                echo "  ⏳ Run $RUN_ID is still running, skipping..."
+                echo "    ⏳ $RUN_ID — still running, skip"
                 continue
               fi
 
-              # Keep the first (latest) successful run
+              # Keep latest successful
               if [ "$KEPT_ONE" = false ] && [ "$CONCLUSION" = "success" ]; then
-                echo "  ✅ Keeping run $RUN_ID (latest success)"
+                echo "    ✅ $RUN_ID — KEEP (latest success)"
                 KEPT_ONE=true
                 continue
               fi
 
-              # Delete everything else
-              echo "  🗑️  Deleting run $RUN_ID (conclusion: $CONCLUSION)"
+              # Delete the rest
+              echo "    🗑️  $RUN_ID — DELETE ($CONCLUSION)"
               gh api --method DELETE "repos/$REPO/actions/runs/$RUN_ID" || true
-            done
+            done <<< "$RUNS_JSON"
 
             if [ "$KEPT_ONE" = false ]; then
-              echo "  ⚠️  No successful runs found, nothing kept"
+              echo "    ⚠️  No successful runs found"
             fi
           done
 
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          # PART 2: Orphaned runs (from deleted workflows)
+          # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           echo ""
-          echo "✅ Cleanup complete!"
+          echo "🔍 PART 2: Orphaned Runs (deleted workflows)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          # Collect all active workflow IDs into a set
+          ACTIVE_WF_IDS=$(gh api "repos/$REPO/actions/workflows" --paginate --jq '.workflows[].id')
+
+          # Get ALL runs in the repo
+          ALL_RUNS=$(gh api "repos/$REPO/actions/runs?per_page=100" --paginate \
+            --jq '.workflow_runs[] | "\(.id)|\(.workflow_id)|\(.name)"')
+
+          ORPHAN_COUNT=0
+
+          while IFS= read -r LINE; do
+            [ -z "$LINE" ] && continue
+            RUN_ID=$(echo "$LINE" | cut -d'|' -f1)
+            RUN_WF_ID=$(echo "$LINE" | cut -d'|' -f2)
+            RUN_NAME=$(echo "$LINE" | cut -d'|' -f3)
+
+            # Check if this run's workflow still exists
+            IS_ACTIVE=false
+            for AID in $ACTIVE_WF_IDS; do
+              if [ "$AID" = "$RUN_WF_ID" ]; then
+                IS_ACTIVE=true
+                break
+              fi
+            done
+
+            if [ "$IS_ACTIVE" = false ]; then
+              echo "  🗑️  Orphan: $RUN_NAME (run $RUN_ID, old workflow $RUN_WF_ID)"
+              gh api --method DELETE "repos/$REPO/actions/runs/$RUN_ID" || true
+              ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
+            fi
+          done <<< "$ALL_RUNS"
+
+          if [ "$ORPHAN_COUNT" -eq 0 ]; then
+            echo "  ✅ No orphaned runs found"
+          else
+            echo "  🗑️  Deleted $ORPHAN_COUNT orphaned runs"
+          fi
+
+          echo ""
+          echo "✅ Full cleanup complete!"
