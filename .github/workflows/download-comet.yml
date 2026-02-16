@@ -71,14 +71,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-      - name: Commit versions.md
+      - name: Commit VERSIONS.md
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          git add Versions.MD
+          git add VERSIONS.md
           if git diff --staged --quiet; then
-            echo "No changes to Versions.MD"
+            echo "No changes to VERSIONS.md"
           else
             git commit -m "📦 Comet $VERSION"
             git pull --rebase origin main
