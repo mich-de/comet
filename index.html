@@ -86,14 +86,8 @@
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .header {
@@ -128,6 +122,40 @@
             color: var(--gray);
             font-size: 16px;
             font-weight: 500;
+        }
+
+        /* ── Current Version Badge ── */
+        .current-version-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: 2px solid var(--success);
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #2e7d32;
+            animation: pulse 2s infinite;
+        }
+
+        .current-version-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.3); }
+            50%      { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
         }
 
         .info-banner {
@@ -172,9 +200,7 @@
             transform: translateY(-4px);
         }
 
-        .download-info {
-            flex: 1;
-        }
+        .download-info { flex: 1; }
 
         .download-title {
             font-weight: 700;
@@ -187,6 +213,18 @@
             color: var(--gray);
             font-size: 13px;
             line-height: 1.5;
+        }
+
+        .download-version-tag {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 3px 10px;
+            background: #ede7f6;
+            color: var(--primary-dark);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Monaco', 'Courier New', monospace;
         }
 
         .download-btn {
@@ -209,13 +247,9 @@
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
-        .download-btn:active {
-            transform: translateY(-1px);
-        }
+        .download-btn:active { transform: translateY(-1px); }
 
-        .section {
-            margin-bottom: 40px;
-        }
+        .section { margin-bottom: 40px; }
 
         .section-title {
             font-size: 20px;
@@ -231,16 +265,9 @@
             margin-bottom: 30px;
         }
 
-        .steps {
-            display: grid;
-            gap: 20px;
-        }
+        .steps { display: grid; gap: 20px; }
 
-        .step {
-            display: flex;
-            gap: 18px;
-            align-items: flex-start;
-        }
+        .step { display: flex; gap: 18px; align-items: flex-start; }
 
         .step-number {
             display: flex;
@@ -256,22 +283,11 @@
             flex-shrink: 0;
         }
 
-        .step-content {
-            flex: 1;
-            padding-top: 5px;
-        }
+        .step-content { flex: 1; padding-top: 5px; }
 
-        .step-title {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 6px;
-        }
+        .step-title { font-weight: 700; color: var(--dark); margin-bottom: 6px; }
 
-        .step-desc {
-            color: var(--gray);
-            font-size: 13px;
-            line-height: 1.6;
-        }
+        .step-desc { color: var(--gray); font-size: 13px; line-height: 1.6; }
 
         .features {
             display: grid;
@@ -294,23 +310,11 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .feature-icon {
-            font-size: 28px;
-            margin-bottom: 12px;
-        }
+        .feature-icon { font-size: 28px; margin-bottom: 12px; }
 
-        .feature-title {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 6px;
-            font-size: 14px;
-        }
+        .feature-title { font-weight: 700; color: var(--dark); margin-bottom: 6px; font-size: 14px; }
 
-        .feature-desc {
-            color: var(--gray);
-            font-size: 12px;
-            line-height: 1.5;
-        }
+        .feature-desc { color: var(--gray); font-size: 12px; line-height: 1.5; }
 
         .manual-download {
             background: #f9f9f9;
@@ -320,18 +324,9 @@
             margin-bottom: 30px;
         }
 
-        .manual-download h3 {
-            font-size: 17px;
-            margin-bottom: 12px;
-            color: var(--dark);
-        }
+        .manual-download h3 { font-size: 17px; margin-bottom: 12px; color: var(--dark); }
 
-        .manual-download p {
-            color: var(--gray);
-            font-size: 13px;
-            margin-bottom: 12px;
-            line-height: 1.6;
-        }
+        .manual-download p { color: var(--gray); font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
 
         .url-box {
             background: white;
@@ -354,12 +349,7 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
         }
 
-        .copy-hint {
-            font-size: 11px;
-            color: var(--gray);
-            margin-top: 8px;
-            font-style: italic;
-        }
+        .copy-hint { font-size: 11px; color: var(--gray); margin-top: 8px; font-style: italic; }
 
         .status-message {
             text-align: center;
@@ -371,38 +361,130 @@
             display: none;
         }
 
-        .status-message.show {
-            display: block;
-            animation: fadeIn 0.3s ease-out;
-        }
+        .status-message.show { display: block; animation: fadeIn 0.3s ease-out; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .status-message.success {
+        .status-message.success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid var(--success); }
+        .status-message.error   { background: #ffebee; color: #c62828; border-left: 4px solid var(--danger); }
+        .status-message.loading { background: #e3f2fd; color: #1565c0; border-left: 4px solid var(--info); }
+
+        /* ── Version History Table ── */
+        .version-history {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        .version-history-loading {
+            text-align: center;
+            color: var(--gray);
+            padding: 20px 0;
+            font-size: 14px;
+        }
+
+        .version-history-loading .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .version-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .version-table thead th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .version-table thead th:first-child { border-radius: 8px 0 0 0; }
+        .version-table thead th:last-child  { border-radius: 0 8px 0 0; }
+
+        .version-table tbody tr {
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .version-table tbody tr:hover { background: #f0f0ff; }
+
+        .version-table tbody tr:first-child {
             background: #e8f5e9;
+            font-weight: 600;
+        }
+
+        .version-table tbody tr:first-child:hover { background: #c8e6c9; }
+
+        .version-table td {
+            padding: 10px 16px;
+            color: var(--dark);
+            vertical-align: middle;
+        }
+
+        .version-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #ede7f6;
+            color: var(--primary-dark);
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .version-tag.latest {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
             color: #2e7d32;
-            border-left: 4px solid var(--success);
+            border: 1px solid #a5d6a7;
         }
 
-        .status-message.error {
-            background: #ffebee;
-            color: #c62828;
-            border-left: 4px solid var(--danger);
+        .version-new-badge {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 6px;
+            background: var(--success);
+            color: white;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            vertical-align: middle;
         }
 
-        .status-message.loading {
-            background: #e3f2fd;
-            color: #1565c0;
-            border-left: 4px solid var(--info);
+        .version-date {
+            white-space: nowrap;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .version-empty {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+            font-style: italic;
         }
 
         .footer {
@@ -414,79 +496,31 @@
             border-top: 1px solid var(--border);
         }
 
-        .footer p {
-            margin: 6px 0;
-        }
+        .footer p { margin: 6px 0; }
 
-        .last-update {
-            color: var(--primary);
-            font-weight: 700;
-        }
+        .last-update { color: var(--primary); font-weight: 700; }
 
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 30px 0;
-        }
+        .divider { height: 1px; background: var(--border); margin: 30px 0; }
 
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none; }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 30px 20px;
-            }
-
-            h1 {
-                font-size: 26px;
-            }
-
-            .download-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .download-btn {
-                margin-left: 0;
-                margin-top: 15px;
-                width: 100%;
-            }
-
-            .language-toggle {
-                top: 10px;
-                right: 10px;
-            }
-
-            .lang-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
+            .container { padding: 30px 20px; }
+            h1 { font-size: 26px; }
+            .download-card { flex-direction: column; align-items: flex-start; }
+            .download-btn { margin-left: 0; margin-top: 15px; width: 100%; }
+            .language-toggle { top: 10px; right: 10px; }
+            .lang-btn { padding: 6px 12px; font-size: 12px; }
+            .version-table { font-size: 11px; }
+            .version-table td, .version-table th { padding: 8px 10px; }
         }
 
         @media (max-width: 500px) {
-            .container {
-                padding: 20px;
-                border-radius: 12px;
-            }
-
-            h1 {
-                font-size: 22px;
-            }
-
-            .logo {
-                width: 80px;
-                height: 80px;
-                font-size: 40px;
-            }
-
-            .section-title {
-                font-size: 17px;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
-            }
+            .container { padding: 20px; border-radius: 12px; }
+            h1 { font-size: 22px; }
+            .logo { width: 80px; height: 80px; font-size: 40px; }
+            .section-title { font-size: 17px; }
+            .features { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -503,6 +537,12 @@
             <div class="logo">⬇️</div>
             <h1 data-en="Comet Browser" data-it="Browser Comet">Comet Browser</h1>
             <p class="subtitle" data-en="Download the latest stable version from GitHub" data-it="Scarica l'ultima versione stabile da GitHub">Download the latest stable version from GitHub</p>
+            <!-- Current Version Badge (populated dynamically) -->
+            <div class="current-version-badge" id="current-version-badge" style="display:none;">
+                <span class="dot"></span>
+                <span data-en="Current Version:" data-it="Versione Attuale:">Current Version:</span>
+                <span id="current-version-number">...</span>
+            </div>
         </div>
 
         <!-- Info Banner -->
@@ -519,6 +559,7 @@
                     <div class="download-info">
                         <div class="download-title" data-en="💻 Windows 64-bit" data-it="💻 Windows 64-bit">💻 Windows 64-bit</div>
                         <div class="download-desc" data-en="Recommended version for most users" data-it="Versione consigliata per la maggior parte degli utenti">Recommended version for most users</div>
+                        <div class="download-version-tag" id="download-version-tag" style="display:none;">v...</div>
                     </div>
                     <button class="download-btn" onclick="downloadFile('win_x64')" data-en="Download" data-it="Scarica">Download</button>
                 </div>
@@ -549,6 +590,18 @@
                     <div class="feature-title" data-en="Easy Install" data-it="Facile da Installare">Easy Install</div>
                     <div class="feature-desc" data-en="Standard installer" data-it="Installer standard">Standard installer</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Version History Section -->
+        <div class="section">
+            <h2 class="section-title" data-en="📋 Version History" data-it="📋 Storico Versioni">📋 Version History</h2>
+            <div class="version-history">
+                <div class="version-history-loading" id="version-loading">
+                    <span class="spinner"></span>
+                    <span data-en="Loading version history..." data-it="Caricamento storico versioni...">Loading version history...</span>
+                </div>
+                <div id="version-table-container" style="display:none;"></div>
             </div>
         </div>
 
@@ -617,117 +670,83 @@
     </div>
 
     <script>
-        // Languages object
-        const translations = {
-            en: {},
-            it: {}
-        };
+        const GITHUB_USER = 'mich-de';
+        const GITHUB_REPO = 'comet';
 
-        // Initialize translations from HTML attributes
-        function initTranslations() {
-            document.querySelectorAll('[data-en]').forEach(element => {
-                const enText = element.getAttribute('data-en');
-                const itText = element.getAttribute('data-it');
-                
-                if (!translations.en[enText]) {
-                    translations.en[enText] = enText;
-                }
-                if (!translations.it[enText]) {
-                    translations.it[enText] = itText;
-                }
-            });
-        }
-
-        // Set language
+        // ── Language ──
         function setLanguage(lang) {
-            // Update button states
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
 
-            // Update all elements
-            document.querySelectorAll('[data-en][data-it]').forEach(element => {
-                const text = element.getAttribute(`data-${lang}`);
-                if (element.tagName === 'INPUT' || element.tagName === 'BUTTON') {
-                    element.value = text;
+            document.querySelectorAll('[data-en][data-it]').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+                    el.value = text;
                 } else {
-                    element.textContent = text;
+                    el.textContent = text;
                 }
             });
 
-            // Save preference
             localStorage.setItem('preferred-language', lang);
+
+            // Re-render the version table with translated headers
+            if (window._versionRows && window._versionRows.length > 0) {
+                renderVersionTable(window._versionRows);
+            }
         }
 
-        // Download file
+        // ── Download ──
         function downloadFile(platform) {
-            const url = 'https://github.com/mich-de/comet/releases/latest/download/comet-installer-win_x64.exe';
-            const fileName = 'comet-installer-win_x64.exe';
-
+            const url = `https://github.com/${GITHUB_USER}/${GITHUB_REPO}/releases/latest/download/comet-installer-win_x64.exe`;
             const lang = localStorage.getItem('preferred-language') || 'en';
-            const loadingMsg = lang === 'en' ? '⏳ Download in progress...' : '⏳ Download in corso...';
-            const successMsg = lang === 'en' ? '✓ Download started! Check your Downloads folder.' : '✓ Download avviato! Controlla la cartella Download.';
-
-            showStatus(loadingMsg, 'loading');
+            showStatus(lang === 'en' ? '⏳ Download in progress...' : '⏳ Download in corso...', 'loading');
 
             const link = document.createElement('a');
             link.href = url;
-            link.download = fileName;
+            link.download = 'comet-installer-win_x64.exe';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
             setTimeout(() => {
-                showStatus(successMsg, 'success');
+                showStatus(lang === 'en' ? '✓ Download started! Check your Downloads folder.' : '✓ Download avviato! Controlla la cartella Download.', 'success');
             }, 1000);
-
-            setTimeout(() => {
-                hideStatus();
-            }, 5000);
+            setTimeout(hideStatus, 5000);
         }
 
-        // Copy URL
+        // ── Copy URL ──
         function copyUrl() {
             const url = document.getElementById('manual-url').textContent.trim();
             navigator.clipboard.writeText(url).then(() => {
                 const lang = localStorage.getItem('preferred-language') || 'en';
-                const msg = lang === 'en' ? '✓ URL copied to clipboard!' : '✓ URL copiato negli appunti!';
-                showStatus(msg, 'success');
+                showStatus(lang === 'en' ? '✓ URL copied to clipboard!' : '✓ URL copiato negli appunti!', 'success');
                 setTimeout(hideStatus, 3000);
             }).catch(() => {
                 const lang = localStorage.getItem('preferred-language') || 'en';
-                const msg = lang === 'en' ? '✗ Copy error' : '✗ Errore di copia';
-                showStatus(msg, 'error');
+                showStatus(lang === 'en' ? '✗ Copy error' : '✗ Errore di copia', 'error');
                 setTimeout(hideStatus, 3000);
             });
         }
 
-        // Show status message
+        // ── Status helpers ──
         function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = `status-message show ${type}`;
+            const s = document.getElementById('status');
+            s.textContent = message;
+            s.className = `status-message show ${type}`;
         }
-
-        // Hide status message
         function hideStatus() {
-            const status = document.getElementById('status');
-            status.className = 'status-message';
+            document.getElementById('status').className = 'status-message';
         }
 
-        // Get last update time from GitHub API
+        // ── Fetch Last Update from Release API ──
         function getLastUpdate() {
-            const username = 'mich-de';
-            const repo = 'comet';
-            
-            fetch(`https://api.github.com/repos/${username}/${repo}/releases/latest`)
+            fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/releases/latest`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.published_at) {
                         const date = new Date(data.published_at);
                         const lang = localStorage.getItem('preferred-language') || 'en';
-                        const formatted = lang === 'en' 
+                        const formatted = lang === 'en'
                             ? date.toLocaleDateString('en-US') + ' ' + date.toLocaleTimeString('en-US')
                             : date.toLocaleDateString('it-IT') + ' ' + date.toLocaleTimeString('it-IT');
                         document.getElementById('last-update').textContent = formatted;
@@ -738,16 +757,133 @@
                 });
         }
 
-        // Initialize
+        // ── Fetch and Parse Versions.MD ──
+        function fetchVersionHistory() {
+            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/Versions.MD`;
+
+            fetch(rawUrl)
+                .then(r => {
+                    if (!r.ok) throw new Error('Versions.MD not found');
+                    return r.text();
+                })
+                .then(md => {
+                    const rows = parseVersionsTable(md);
+                    window._versionRows = rows; // cache for language switch
+
+                    if (rows.length > 0) {
+                        // Set current version badge
+                        const latestVersion = rows[0].version;
+                        if (latestVersion && latestVersion !== 'Unknown') {
+                            document.getElementById('current-version-number').textContent = latestVersion;
+                            document.getElementById('current-version-badge').style.display = 'inline-flex';
+
+                            // Set version tag on download card
+                            const tag = document.getElementById('download-version-tag');
+                            tag.textContent = 'v' + latestVersion;
+                            tag.style.display = 'inline-block';
+                        }
+                    }
+
+                    renderVersionTable(rows);
+                })
+                .catch(() => {
+                    document.getElementById('version-loading').innerHTML =
+                        '<span style="color:var(--gray); font-style:italic;">No version history available yet.</span>';
+                });
+        }
+
+        // Parse MD table → array of { date, version, lastModified, sourceUrl }
+        function parseVersionsTable(md) {
+            const lines = md.split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
+            // Skip header (line 0) and separator (line 1)
+            const dataLines = lines.slice(2);
+            const rows = [];
+
+            for (const line of dataLines) {
+                const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
+                if (cols.length >= 2) {
+                    rows.push({
+                        date:         cols[0] || '',
+                        version:      (cols[1] || '').replace(/\*\*/g, ''), // Remove bold markdown **
+                        lastModified: cols[2] || '',
+                        sourceUrl:    cols[3] || ''
+                    });
+                }
+            }
+
+            return rows;
+        }
+
+        // Render the version table HTML
+        function renderVersionTable(rows) {
+            const lang = localStorage.getItem('preferred-language') || 'en';
+            const container = document.getElementById('version-table-container');
+
+            if (rows.length === 0) {
+                container.innerHTML = `<div class="version-empty">${lang === 'en' ? 'No version history available yet.' : 'Nessuno storico versioni disponibile.'}</div>`;
+                document.getElementById('version-loading').style.display = 'none';
+                container.style.display = 'block';
+                return;
+            }
+
+            const headers = lang === 'en'
+                ? { date: 'Date', version: 'Version', status: 'Status' }
+                : { date: 'Data', version: 'Versione', status: 'Stato' };
+
+            const latestLabel = lang === 'en' ? 'LATEST' : 'ATTUALE';
+            const prevLabel   = lang === 'en' ? 'Previous' : 'Precedente';
+
+            let html = `
+                <table class="version-table">
+                    <thead>
+                        <tr>
+                            <th>${headers.date}</th>
+                            <th>${headers.version}</th>
+                            <th>${headers.status}</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            // Track unique versions to detect upgrades
+            const seenVersions = new Set();
+
+            rows.forEach((row, idx) => {
+                const isLatest = idx === 0;
+                const isNewVersion = !seenVersions.has(row.version);
+                seenVersions.add(row.version);
+
+                const versionClass = isLatest ? 'version-tag latest' : 'version-tag';
+                const badge = isLatest
+                    ? `<span class="version-new-badge">${latestLabel}</span>`
+                    : (isNewVersion ? `<span class="version-new-badge" style="background:var(--info);">NEW</span>` : '');
+
+                const statusText = isLatest
+                    ? (lang === 'en' ? '✅ Current' : '✅ Attuale')
+                    : prevLabel;
+
+                html += `
+                        <tr>
+                            <td class="version-date">${row.date}</td>
+                            <td><span class="${versionClass}">${row.version}</span>${badge}</td>
+                            <td>${statusText}</td>
+                        </tr>`;
+            });
+
+            html += `
+                    </tbody>
+                </table>`;
+
+            document.getElementById('version-loading').style.display = 'none';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        // ── Init ──
         window.addEventListener('load', () => {
-            initTranslations();
-            
-            // Check for saved language preference
             const savedLang = localStorage.getItem('preferred-language') || 'en';
             setLanguage(savedLang);
-            
-            // Get last update
             getLastUpdate();
+            fetchVersionHistory();
         });
     </script>
 </body>
