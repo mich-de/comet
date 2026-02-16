@@ -2,12 +2,12 @@ name: Download Comet Latest (Win64)
 
 on:
   schedule:
-    - cron: '0 0 * * *'        # Every day at midnight UTC
-  workflow_dispatch:           # Allows manual trigger
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 permissions:
-  contents: write              # REQUIRED: for committing Versions.MD and creating releases
-  deployments: write           # REQUIRED: for cleaning up deployments
+  contents: write
+  deployments: write
 
 jobs:
   download:
@@ -20,89 +20,56 @@ jobs:
           fetch-depth: 0
 
       - name: Download & Extract Version
-        id: download
         run: |
           mkdir -p releases
-          
-          FINAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable")
-          echo "Detected Final URL: $FINAL_URL"
-          
+
+          FINAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} \
+            "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable")
+          echo "Final URL: $FINAL_URL"
+
           VERSION=$(echo "$FINAL_URL" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-          if [ -z "$VERSION" ]; then
-            VERSION="Unknown"
-          fi
-          echo "Detected Version: $VERSION"
-          
+          [ -z "$VERSION" ] && VERSION="Unknown"
+          echo "Version: $VERSION"
+
           curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
             -o releases/comet-installer-win_x64.exe \
             "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
-          
+
           FILE_SIZE=$(du -m releases/comet-installer-win_x64.exe | cut -f1)
-          
-          # Set the date HERE where shell is evaluated
-          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
-          
+          BUILD_DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
+
           echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "FILE_SIZE=${FILE_SIZE}MB" >> $GITHUB_ENV
-          echo "BUILD_DATE=$DATE" >> $GITHUB_ENV
-
-      - name: Create/Update GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: comet-win64-latest
-          name: "Comet Win64 — v${{ env.VERSION }}"
-          body: |
-            ## 🚀 Comet Browser v${{ env.VERSION }}
-            
-            | Info | Value |
-            |------|-------|
-            | **Version** | `${{ env.VERSION }}` |
-            | **Size** | ${{ env.FILE_SIZE }} |
-            | **Platform** | Windows x64 |
-            | **Updated** | ${{ env.BUILD_DATE }} |
-            
-            _Mirrored automatically from Perplexity's official servers._
-          draft: false
-          prerelease: false
-          files: releases/comet-installer-win_x64.exe
-          make_latest: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
 
       - name: Update VERSIONS.md
         run: |
-          DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           FILE="VERSIONS.md"
           HEADER="| Date | Version | Size | Source URL |"
           SEPARATOR="|------|---------|------|------------|"
-          
-          # ALWAYS ensure header exists
+
           if [ ! -f "$FILE" ] || ! grep -q "^| Date" "$FILE"; then
             echo "$HEADER" > "$FILE"
             echo "$SEPARATOR" >> "$FILE"
           fi
-          
-          # Clean the source URL (strip query params)
+
           CLEAN_URL=$(echo "$FINAL_URL" | cut -d'?' -f1)
-          
-          # Prepend new entry after header
-          NEW_LINE="| $DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
-          
+          NEW_LINE="| $BUILD_DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
+
           head -n 2 "$FILE" > temp_versions.md
           echo "$NEW_LINE" >> temp_versions.md
           tail -n +3 "$FILE" >> temp_versions.md
           mv temp_versions.md "$FILE"
-          
-          echo "=== Updated VERSIONS.md ==="
+
+          echo "=== VERSIONS.md ==="
           cat "$FILE"
 
       - name: Commit VERSIONS.md
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          
+
           git add VERSIONS.md
           if git diff --staged --quiet; then
             echo "No changes to VERSIONS.md"
@@ -112,7 +79,6 @@ jobs:
             git push
           fi
 
-
       - name: Create/Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -120,14 +86,14 @@ jobs:
           name: "Comet Win64 — v${{ env.VERSION }}"
           body: |
             ## 🚀 Comet Browser v${{ env.VERSION }}
-            
+
             | Info | Value |
             |------|-------|
             | **Version** | `${{ env.VERSION }}` |
             | **Size** | ${{ env.FILE_SIZE }} |
             | **Platform** | Windows x64 |
-            | **Updated** | ${{ env.DATE }} |
-            
+            | **Updated** | ${{ env.BUILD_DATE }} |
+
             _Mirrored automatically from Perplexity's official servers._
           draft: false
           prerelease: false
@@ -135,7 +101,6 @@ jobs:
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DATE: $(date -u +"%Y-%m-%d")
 
       - name: Cleanup Old Releases/Tags
         env:
@@ -144,23 +109,20 @@ jobs:
           REPO: ${{ github.event.repository.name }}
         run: |
           set -e
-          echo "Starting cleanup..."
-
           LATEST_ID=$(gh api repos/$OWNER/$REPO/releases/tags/comet-win64-latest --jq '.id')
           ALL_IDS=$(gh api repos/$OWNER/$REPO/releases --paginate --jq '.[].id')
 
           for ID in $ALL_IDS; do
             if [ "$ID" != "$LATEST_ID" ] && [ -n "$ID" ]; then
-              echo "Deleting obsolete release ID=$ID"
+              echo "Deleting release $ID"
               gh api --method DELETE repos/$OWNER/$REPO/releases/$ID || true
             fi
           done
 
           git fetch --tags
-          TAGS=$(git tag -l)
-          for TAG in $TAGS; do
+          for TAG in $(git tag -l); do
             if [ "$TAG" != "comet-win64-latest" ]; then
-              echo "Deleting obsolete tag $TAG"
+              echo "Deleting tag $TAG"
               git push origin --delete "$TAG" || true
               git tag -d "$TAG" || true
             fi
@@ -172,18 +134,14 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -e
-          echo "Fetching list of deployments..."
-          
           IDS=$(gh api "repos/$REPO/deployments?per_page=100" --paginate --jq '.[].id')
-          
+
           if [ -z "$IDS" ]; then
             echo "No deployments found."
             exit 0
           fi
-          
+
           for ID in $IDS; do
-            echo "Deleting deployment $ID..."
+            echo "Deleting deployment $ID"
             gh api --method DELETE "repos/$REPO/deployments/$ID" || true
           done
-          
-          echo "Cleanup complete!"
