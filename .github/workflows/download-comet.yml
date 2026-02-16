@@ -71,33 +71,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-      - name: Update Versions.MD
+      - name: Commit versions.md
         run: |
-          DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          FILE="Versions.MD"
-          HEADER="| Date | Version | Size | Source URL |"
-          SEPARATOR="|------|---------|------|------------|"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           
-          # ALWAYS ensure header exists
-          if [ ! -f "$FILE" ] || ! grep -q "^| Date" "$FILE"; then
-            echo "$HEADER" > "$FILE"
-            echo "$SEPARATOR" >> "$FILE"
+          git add Versions.MD
+          if git diff --staged --quiet; then
+            echo "No changes to Versions.MD"
+          else
+            git commit -m "📦 Comet $VERSION"
+            git pull --rebase origin main
+            git push
           fi
-          
-          # Clean the source URL (strip query params for readability)
-          CLEAN_URL=$(echo "$FINAL_URL" | cut -d'?' -f1)
-          
-          # Prepare new entry
-          NEW_LINE="| $DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
-          
-          # Prepend new entry after header (lines 1-2)
-          head -n 2 "$FILE" > temp_versions.md
-          echo "$NEW_LINE" >> temp_versions.md
-          tail -n +3 "$FILE" >> temp_versions.md
-          mv temp_versions.md "$FILE"
-          
-          echo "=== Updated Versions.MD ==="
-          cat "$FILE"
+
 
       - name: Commit Versions.MD
         run: |
