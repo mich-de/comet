@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0       # Fetch all history
+          fetch-depth: 0
 
       - name: Download & Extract Version
         id: download
@@ -29,7 +29,6 @@ jobs:
           echo "Detected Final URL: $FINAL_URL"
           
           # 2. Extract Version from URL (matches pattern X.X.X.X)
-          # Example URL: .../144.0.7559.43148/comet_latest_intel.exe...
           VERSION=$(echo "$FINAL_URL" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
           
           if [ -z "$VERSION" ]; then
@@ -42,35 +41,41 @@ jobs:
           curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
             -o releases/comet-installer-win_x64.exe \
             "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
-
-          # 4. Extract 'Last-Modified' header
-          LAST_MODIFIED=$(curl -sI "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable" | grep -i "last-modified" | cut -d: -f2- | xargs)
           
-          # Export variables for next steps
+          # 4. Get file size in MB
+          FILE_SIZE=$(du -m releases/comet-installer-win_x64.exe | cut -f1)
+          
+          # Export variables
           echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "LAST_MODIFIED=$LAST_MODIFIED" >> $GITHUB_ENV
+          echo "FILE_SIZE=${FILE_SIZE}MB" >> $GITHUB_ENV
 
       - name: Update Versions.MD
         run: |
           DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           FILE="Versions.MD"
+          HEADER="| Date | Version | Size | Source URL |"
+          SEPARATOR="|------|---------|------|------------|"
           
-          # Create header if file doesn't exist
-          if [ ! -f "$FILE" ]; then
-            echo "| Date | Version | Last Modified (Server) | Source URL |" > "$FILE"
-            echo "|---|---|---|---|" >> "$FILE"
+          # ALWAYS ensure header exists
+          if [ ! -f "$FILE" ] || ! grep -q "^| Date" "$FILE"; then
+            echo "$HEADER" > "$FILE"
+            echo "$SEPARATOR" >> "$FILE"
           fi
           
-          # Prepare the new line with the version
-          NEW_LINE="| $DATE | **$VERSION** | $LAST_MODIFIED | $FINAL_URL |"
+          # Clean the source URL (strip query params for readability)
+          CLEAN_URL=$(echo "$FINAL_URL" | cut -d'?' -f1)
           
-          # Prepend new line (keeping the header)
+          # Prepare new entry
+          NEW_LINE="| $DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
+          
+          # Prepend new entry after header (lines 1-2)
           head -n 2 "$FILE" > temp_versions.md
           echo "$NEW_LINE" >> temp_versions.md
           tail -n +3 "$FILE" >> temp_versions.md
           mv temp_versions.md "$FILE"
           
+          echo "=== Updated Versions.MD ==="
           cat "$FILE"
 
       - name: Commit Versions.MD
@@ -82,7 +87,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to Versions.MD"
           else
-            git commit -m "Update Versions.MD: $VERSION"
+            git commit -m "📦 Comet $VERSION"
             git push
           fi
 
@@ -90,13 +95,18 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: comet-win64-latest
-          name: Comet Win64 Latest ($VERSION)
+          name: "Comet Win64 — v${{ env.VERSION }}"
           body: |
-            **Version:** ${{ env.VERSION }}
-            **Last Modified:** ${{ env.LAST_MODIFIED }}
-            **Date:** ${{ env.DATE }}
+            ## 🚀 Comet Browser v${{ env.VERSION }}
             
-            _Automated release from official source._
+            | Info | Value |
+            |------|-------|
+            | **Version** | `${{ env.VERSION }}` |
+            | **Size** | ${{ env.FILE_SIZE }} |
+            | **Platform** | Windows x64 |
+            | **Updated** | ${{ env.DATE }} |
+            
+            _Mirrored automatically from Perplexity's official servers._
           draft: false
           prerelease: false
           files: releases/comet-installer-win_x64.exe
@@ -114,7 +124,6 @@ jobs:
           set -e
           echo "Starting cleanup..."
 
-          # 1. CLEANUP RELEASES (Keep strictly the one we just made)
           LATEST_ID=$(gh api repos/$OWNER/$REPO/releases/tags/comet-win64-latest --jq '.id')
           ALL_IDS=$(gh api repos/$OWNER/$REPO/releases --paginate --jq '.[].id')
 
@@ -125,7 +134,6 @@ jobs:
             fi
           done
 
-          # 2. CLEANUP TAGS
           git fetch --tags
           TAGS=$(git tag -l)
           for TAG in $TAGS; do
@@ -144,7 +152,6 @@ jobs:
           set -e
           echo "Fetching list of deployments..."
           
-          # Get all deployment IDs
           IDS=$(gh api "repos/$REPO/deployments?per_page=100" --paginate --jq '.[].id')
           
           if [ -z "$IDS" ]; then
