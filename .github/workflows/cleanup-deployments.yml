@@ -1,41 +1,96 @@
-name: Cleanup Deployments
+name: Download Comet Latest (Win64)
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'        # Every day at midnight UTC
+  workflow_dispatch:           # Allows manual trigger
+
+# PERMISSIONS are crucial here. 
+# We need 'contents: write' for releases/tags and 'deployments: write' for the cleanup step.
+permissions:
+  contents: write
+  deployments: write
 
 jobs:
-  cleanup-deployments:
+  download:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Delete all deployments (all environments)
+      - name: Download Comet Windows 64-bit
+        run: |
+          mkdir -p releases
+          curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
+            -o releases/comet-installer-win_x64.exe \
+            "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
+
+      - name: Create/Update GitHub Release (comet-win64-latest)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: comet-win64-latest
+          name: Comet Win64 Latest
+          draft: false
+          prerelease: false
+          files: releases/comet-installer-win_x64.exe
+          make_latest: true
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          REPO: mich-de/comet
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete all other releases and tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
         run: |
           set -e
+          echo "Cleaning up old releases/tags..."
+          
+          # 1. CLEANUP RELEASES
+          LATEST_ID=$(gh api repos/$OWNER/$REPO/releases/tags/comet-win64-latest --jq '.id')
+          ALL_IDS=$(gh api repos/$OWNER/$REPO/releases --paginate --jq '.[].id')
 
-          echo "Recupero lista deployments..."
-          IDS=$(gh api --method GET "repos/$REPO/deployments?per_page=100" -q '.[].id')
-
-          if [ -z "$IDS" ]; then
-            echo "Nessun deployment trovato."
-            exit 0
-          fi
-
-          for ID in $IDS; do
-            echo "Elimino deployment $ID"
-            gh api \
-              --method DELETE \
-              -H "Accept: application/vnd.github+json" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              "repos/$REPO/deployments/$ID" || true
+          for ID in $ALL_IDS; do
+            if [ "$ID" != "$LATEST_ID" ] && [ -n "$ID" ]; then
+              echo "Deleting release ID=$ID"
+              gh api --method DELETE repos/$OWNER/$REPO/releases/$ID || true
+            fi
           done
 
-          echo ""
-          echo "Cleanup completato!"
+          # 2. CLEANUP TAGS
+          git fetch --tags
+          TAGS=$(git tag -l)
+          for TAG in $TAGS; do
+            if [ "$TAG" != "comet-win64-latest" ]; then
+              echo "Deleting tag $TAG"
+              git push origin --delete "$TAG" || true
+              git tag -d "$TAG" || true
+            fi
+          done
+
+      - name: Cleanup Deployments
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          echo "Fetching list of deployments..."
+          
+          # Get all deployment IDs
+          IDS=$(gh api "repos/$REPO/deployments?per_page=100" --paginate --jq '.[].id')
+          
+          if [ -z "$IDS" ]; then
+            echo "No deployments found."
+            exit 0
+          fi
+          
+          for ID in $IDS; do
+            echo "Deleting deployment $ID..."
+            # Using '|| true' to prevent failure if deployment is already gone
+            gh api --method DELETE "repos/$REPO/deployments/$ID" || true
+          done
+          
+          echo "Cleanup complete!"
