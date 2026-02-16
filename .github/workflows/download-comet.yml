@@ -43,41 +43,43 @@ jobs:
           echo "FILE_SIZE=${FILE_SIZE}MB" >> $GITHUB_ENV
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
 
-      - name: Update VERSIONS.md
-        run: |
-          FILE="VERSIONS.md"
-          HEADER="| Date | Version | Size | Source URL |"
-          SEPARATOR="|------|---------|------|------------|"
-
-          if [ ! -f "$FILE" ] || ! grep -q "^| Date" "$FILE"; then
-            echo "$HEADER" > "$FILE"
-            echo "$SEPARATOR" >> "$FILE"
-          fi
-
-          CLEAN_URL=$(echo "$FINAL_URL" | cut -d'?' -f1)
-          NEW_LINE="| $BUILD_DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
-
-          head -n 2 "$FILE" > temp_versions.md
-          echo "$NEW_LINE" >> temp_versions.md
-          tail -n +3 "$FILE" >> temp_versions.md
-          mv temp_versions.md "$FILE"
-
-          echo "=== VERSIONS.md ==="
-          cat "$FILE"
-
-      - name: Commit VERSIONS.md
+      - name: Update & Commit VERSIONS.md
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-
-          git add VERSIONS.md
-          if git diff --staged --quiet; then
-            echo "No changes to VERSIONS.md"
+          
+          # 1. Pull PRIMA di scrivere per avere lo storico aggiornato
+          git pull origin main
+          
+          FILE="VERSIONS.md"
+          HEADER="| Date | Version | Size | Source URL |"
+          SEPARATOR="|------|---------|------|------------|"
+          CLEAN_URL=$(echo "$FINAL_URL" | cut -d'?' -f1)
+          NEW_LINE="| $BUILD_DATE | **$VERSION** | $FILE_SIZE | $CLEAN_URL |"
+          
+          # 2. Leggi le vecchie entry (lo storico)
+          if [ -f "$FILE" ] && grep -q "^| Date" "$FILE"; then
+            # File valido: prendi tutte le righe dati (dalla 3 in poi)
+            OLD_ENTRIES=$(tail -n +3 "$FILE" | grep "^|" || true)
           else
-            git commit -m "📦 Comet $VERSION"
-            git pull --rebase origin main
-            git push
+            OLD_ENTRIES=""
           fi
+          
+          # 3. Riscrivi il file: header + nuova entry + storico
+          echo "$HEADER" > "$FILE"
+          echo "$SEPARATOR" >> "$FILE"
+          echo "$NEW_LINE" >> "$FILE"
+          if [ -n "$OLD_ENTRIES" ]; then
+            echo "$OLD_ENTRIES" >> "$FILE"
+          fi
+          
+          echo "=== VERSIONS.md ($(wc -l < "$FILE") righe) ==="
+          cat "$FILE"
+          
+          # 4. Commit e push
+          git add -f VERSIONS.md
+          git commit -m "📦 Comet $VERSION" || echo "Nothing to commit"
+          git push origin main
 
       - name: Create/Update GitHub Release
         uses: softprops/action-gh-release@v2
