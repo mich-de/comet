@@ -1,2 +1,3 @@
-
-| 2026-02-16 12:20:07 UTC | **144.0.7559.43148** |  | https://pplx-browser-binaries.a0adf9b772aecba4fa8883581f3c9180.r2.cloudflarestorage.com/144.0.7559.43148/comet_latest_intel.exe?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=e9bc7b1db0e6db5ae3d345b6e585cbea%2F20260216%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260216T122000Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=8ce2dbe4be4b6a27b16e2536570963b415df76eb37d8fb49a5c779c805d10516 |
+| Date | Version | Size | Source URL |
+|------|---------|------|------------|
+| 2026-02-16 12:32:46 UTC | **144.0.7559.43148** | 156MB | https://pplx-browser-binaries.a0adf9b772aecba4fa8883581f3c9180.r2.cloudflarestorage.com/144.0.7559.43148/comet_latest_intel.exe |
