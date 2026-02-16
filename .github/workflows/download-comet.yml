@@ -19,25 +19,36 @@ jobs:
         with:
           fetch-depth: 0       # Fetch all history
 
-      - name: Download & Check Version
+      - name: Download & Extract Version
         id: download
         run: |
           mkdir -p releases
           
-          # 1. Get the final redirected URL (often contains version info)
+          # 1. Get the final redirected URL (contains the version)
           FINAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable")
           echo "Detected Final URL: $FINAL_URL"
           
-          # 2. Download the file
+          # 2. Extract Version from URL (matches pattern X.X.X.X)
+          # Example URL: .../144.0.7559.43148/comet_latest_intel.exe...
+          VERSION=$(echo "$FINAL_URL" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
+          
+          if [ -z "$VERSION" ]; then
+            VERSION="Unknown"
+          fi
+          
+          echo "Detected Version: $VERSION"
+          
+          # 3. Download the file
           curl -L --fail --insecure -H "User-Agent: Mozilla/5.0" \
             -o releases/comet-installer-win_x64.exe \
             "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable"
 
-          # 3. Extract 'Last-Modified' header for versioning context
+          # 4. Extract 'Last-Modified' header
           LAST_MODIFIED=$(curl -sI "https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable" | grep -i "last-modified" | cut -d: -f2- | xargs)
           
-          # Export variables for the next step
+          # Export variables for next steps
           echo "FINAL_URL=$FINAL_URL" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "LAST_MODIFIED=$LAST_MODIFIED" >> $GITHUB_ENV
 
       - name: Update Versions.MD
@@ -45,23 +56,19 @@ jobs:
           DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           FILE="Versions.MD"
           
-          # Ensure file exists with header
+          # Create header if file doesn't exist
           if [ ! -f "$FILE" ]; then
-            echo "| Date | Last Modified (Server) | Source URL |" > "$FILE"
-            echo "|---|---|---|" >> "$FILE"
+            echo "| Date | Version | Last Modified (Server) | Source URL |" > "$FILE"
+            echo "|---|---|---|---|" >> "$FILE"
           fi
           
-          # Prepare new line
-          NEW_LINE="| $DATE | $LAST_MODIFIED | $FINAL_URL |"
+          # Prepare the new line with the version
+          NEW_LINE="| $DATE | **$VERSION** | $LAST_MODIFIED | $FINAL_URL |"
           
           # Prepend new line (keeping the header)
-          # 1. Save header to temp
           head -n 2 "$FILE" > temp_versions.md
-          # 2. Add new line
           echo "$NEW_LINE" >> temp_versions.md
-          # 3. Add the rest of the file (skipping old header)
           tail -n +3 "$FILE" >> temp_versions.md
-          # 4. Replace original
           mv temp_versions.md "$FILE"
           
           cat "$FILE"
@@ -72,25 +79,31 @@ jobs:
           git config --global user.name "github-actions[bot]"
           
           git add Versions.MD
-          # Commit only if there are changes
           if git diff --staged --quiet; then
             echo "No changes to Versions.MD"
           else
-            git commit -m "Update Versions.MD with new release info"
+            git commit -m "Update Versions.MD: $VERSION"
             git push
           fi
 
-      - name: Create/Update GitHub Release (comet-win64-latest)
+      - name: Create/Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: comet-win64-latest
-          name: Comet Win64 Latest
+          name: Comet Win64 Latest ($VERSION)
+          body: |
+            **Version:** ${{ env.VERSION }}
+            **Last Modified:** ${{ env.LAST_MODIFIED }}
+            **Date:** ${{ env.DATE }}
+            
+            _Automated release from official source._
           draft: false
           prerelease: false
           files: releases/comet-installer-win_x64.exe
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATE: $(date -u +"%Y-%m-%d")
 
       - name: Cleanup Old Releases/Tags
         env:
