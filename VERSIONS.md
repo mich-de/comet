@@ -1,5 +1,6 @@
 | Date | Version | Size | Source URL |
 |------|---------|------|------------|
+| 2026-11-05 04:43 UTC | **156.0.8078.132** | 228MB | https://pplx-browser-binaries.a0adf9b772aecba4fa8883581f3c9180.r2.cloudflarestorage.com/156.0.8078.132/comet_latest_intel_system.exe |
 | 2026-11-04 04:26 UTC | **156.0.8078.132** | 228MB | https://pplx-browser-binaries.a0adf9b772aecba4fa8883581f3c9180.r2.cloudflarestorage.com/156.0.8078.132/comet_latest_intel_system.exe |
 | 2026-11-03 04:56 UTC | **156.0.8078.132** | 228MB | https://pplx-browser-binaries.a0adf9b772aecba4fa8883581f3c9180.r2.cloudflarestorage.com/156.0.8078.132/comet_latest_intel_system.exe |
 | 2026-11-02 03:54 UTC | **156.0.8078.132** | 228MB | https://pplx-browser-binaries.a0adf9b772aecba4fa8883581f3c9180.r2.cloudflarestorage.com/156.0.8078.132/comet_latest_intel_system.exe |
